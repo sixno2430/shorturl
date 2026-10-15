@@ -2,7 +2,7 @@
 
 ระบบย่อลิงก์ที่สร้าง Short URL, QR Code และเก็บสถิติการคลิก พัฒนาด้วย **React + Node.js (Express) + PostgreSQL**
 
-- **Live demo:** `https://<your-app>.onrender.com` ← ใส่ URL หลัง deploy
+- **Live demo:** https://shorturl-8szu.onrender.com
 - **Login:** ไม่ต้องใช้ Username/Password
 
 | สร้างลิงก์ | สถิติ |
@@ -13,16 +13,22 @@
 
 ## สารบัญ
 
-1. [ฟีเจอร์](#ฟีเจอร์)
-2. [Tech stack](#tech-stack)
-3. [การติดตั้งและรันบนเครื่อง](#การติดตั้งและรันบนเครื่อง)
-4. [Deploy ขึ้น Free Host](#deploy-ขึ้น-free-host)
-5. [Data Flow Diagram (DFD Level 0)](#data-flow-diagram-dfd-level-0)
-6. [ER Diagram](#er-diagram)
-7. [Architecture Diagram](#architecture-diagram)
-8. [API Reference](#api-reference)
-9. [การทดสอบ](#การทดสอบ)
-10. [โครงสร้างโปรเจกต์](#โครงสร้างโปรเจกต์)
+- [Snip — ระบบ Short URL](#snip--ระบบ-short-url)
+  - [สารบัญ](#สารบัญ)
+  - [ฟีเจอร์](#ฟีเจอร์)
+  - [Tech stack](#tech-stack)
+  - [การติดตั้งและรันบนเครื่อง](#การติดตั้งและรันบนเครื่อง)
+    - [สิ่งที่ต้องมี](#สิ่งที่ต้องมี)
+    - [วิธีที่ 1: Docker (ง่ายที่สุด)](#วิธีที่-1-docker-ง่ายที่สุด)
+    - [วิธีที่ 2: รันด้วย Node.js](#วิธีที่-2-รันด้วย-nodejs)
+    - [Environment variables](#environment-variables)
+  - [Deploy ขึ้น Free Host](#deploy-ขึ้น-free-host)
+  - [Data Flow Diagram (DFD Level 0)](#data-flow-diagram-dfd-level-0)
+  - [ER Diagram](#er-diagram)
+  - [Architecture Diagram](#architecture-diagram)
+  - [API Reference](#api-reference)
+  - [การทดสอบ](#การทดสอบ)
+  - [โครงสร้างโปรเจกต์](#โครงสร้างโปรเจกต์)
 
 ---
 
@@ -56,7 +62,7 @@
 | Backend | Node.js 22, Express 5, `nanoid`, `qrcode`, `ua-parser-js`, `helmet`, `express-rate-limit` |
 | Database | PostgreSQL 16 |
 | Test | Vitest + Supertest (รันกับ PostgreSQL จริง) |
-| Hosting | Render (web service, free) + Neon (PostgreSQL, free) |
+| Hosting | Render (web service, free) + Supabase (PostgreSQL, free) |
 
 ---
 
@@ -123,18 +129,21 @@ npm start              # http://localhost:3000
 
 ## Deploy ขึ้น Free Host
 
-ใช้ **Neon** เป็นฐานข้อมูล และ **Render** รันเว็บ ทั้งคู่มี free tier
+ใช้ **Supabase** เป็นฐานข้อมูล และ **Render** รันเว็บ ทั้งคู่มี free tier
 
-**1. สร้างฐานข้อมูลบน Neon**
+**1. สร้างฐานข้อมูลบน Supabase**
 
-1. สมัครที่ <https://neon.tech> แล้วกด *Create project* (เลือก region Singapore)
-2. คัดลอก connection string ที่ลงท้ายด้วย `?sslmode=require`
+1. สมัครที่ <https://supabase.com> แล้วกด *New project* ตั้งรหัสผ่านฐานข้อมูล (จดไว้) และเลือก region Southeast Asia (Singapore)
+2. เมื่อสร้างเสร็จ กดปุ่ม **Connect** ด้านบนของหน้า project
+3. เลือก **Session pooler** (ไม่ใช้ Direct connection เพราะเป็น IPv6 ซึ่ง Render free tier ต่อไม่ได้) แล้วคัดลอก connection string รูปแบบ
+   `postgresql://postgres.<project-ref>:<password>@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres`
+4. แทน `[YOUR-PASSWORD]` ด้วยรหัสผ่านที่ตั้งไว้ แล้วต่อท้ายด้วย `?sslmode=require` เพื่อเปิด SSL
 
 **2. Deploy บน Render**
 
 1. Push โค้ดขึ้น GitHub
 2. ที่ <https://render.com> กด **New → Blueprint** แล้วเลือก repo นี้ (Render จะอ่าน `render.yaml`)
-3. ใส่ `DATABASE_URL` เป็น connection string จาก Neon แล้วกด *Apply*
+3. ใส่ `DATABASE_URL` เป็น connection string จาก Supabase แล้วกด *Apply*
 4. รอ build ประมาณ 2–3 นาที แล้วจะได้ URL `https://shorturl-xxxx.onrender.com`
 
 ถ้าไม่ใช้ Blueprint ให้สร้าง **Web Service** เองด้วยค่า: Build `npm run build`, Start `npm start`, Health check `/api/health`
@@ -244,7 +253,7 @@ flowchart TB
         UA["UA parser +<br/>IP hashing"]
     end
 
-    DB[("PostgreSQL<br/>(Neon)")]
+    DB[("PostgreSQL<br/>(Supabase)")]
 
     SPA -- "HTTPS" --> Static
     SPA -- "JSON" --> API

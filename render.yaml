@@ -1,5 +1,5 @@
 # Render Blueprint: New → Blueprint → pick this repo.
-# DATABASE_URL is asked for on first deploy (paste the Neon connection string).
+# DATABASE_URL is asked for on first deploy (paste the Supabase Session pooler connection string).
 services:
   - type: web
     name: shorturl
