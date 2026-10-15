@@ -154,30 +154,6 @@ npm start              # http://localhost:3000
 
 ## Data Flow Diagram (DFD Level 0)
 
-```mermaid
-flowchart LR
-    U[/"ผู้ใช้<br/>(ผู้สร้างลิงก์)"/]
-    V[/"ผู้เยี่ยมชม<br/>(ผู้คลิกหรือสแกน QR)"/]
-
-    P(("0<br/>ระบบ<br/>Short URL"))
-
-    D1[("D1 URLs")]
-    D2[("D2 Clicks")]
-
-    U -- "URL ต้นฉบับ, ชื่อลิงก์, วันหมดอายุ" --> P
-    U -- "คำขอดูประวัติ / สถิติ / ลบลิงก์" --> P
-    P -- "Short URL, QR Code" --> U
-    P -- "รายการประวัติ, สถิติการคลิก" --> U
-
-    V -- "เปิด Short URL / สแกน QR" --> P
-    P -- "Redirect ไปยัง URL ต้นแบบ" --> V
-
-    P -- "บันทึกลิงก์ใหม่" --> D1
-    D1 -- "ข้อมูลลิงก์" --> P
-    P -- "บันทึกการคลิก" --> D2
-    D2 -- "ข้อมูลการคลิก" --> P
-```
-
 ![DFD Level 0](docs/dfd-level0.png)
 
 **คำอธิบาย**
@@ -194,35 +170,6 @@ flowchart LR
 ---
 
 ## ER Diagram
-
-```mermaid
-erDiagram
-    URLS ||--o{ CLICKS : "has"
-
-    URLS {
-        bigserial   id PK
-        varchar     short_code UK "รหัสสั้น หรือ custom alias"
-        text        original_url "URL ต้นแบบ"
-        varchar     title "ชื่อเรียก (ไม่บังคับ)"
-        boolean     is_custom "ตั้งชื่อเองหรือไม่"
-        integer     click_count "จำนวนคลิกสะสม"
-        timestamptz expires_at "วันหมดอายุ (null = ไม่หมดอายุ)"
-        timestamptz created_at
-    }
-
-    CLICKS {
-        bigserial   id PK
-        bigint      url_id FK
-        timestamptz clicked_at
-        varchar     source "link หรือ qr"
-        text        referrer
-        text        user_agent
-        varchar     browser
-        varchar     os
-        varchar     device "desktop, mobile, tablet, bot"
-        varchar     ip_hash "SHA-256 ของ IP"
-    }
-```
 
 ![ER Diagram](docs/er-diagram.png)
 
