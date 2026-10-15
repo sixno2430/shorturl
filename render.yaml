@@ -1,0 +1,17 @@
+# Render Blueprint: New → Blueprint → pick this repo.
+# DATABASE_URL is asked for on first deploy (paste the Neon connection string).
+services:
+  - type: web
+    name: shorturl
+    runtime: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: IP_HASH_SALT
+        generateValue: true
+      - key: NODE_VERSION
+        value: "22"
